@@ -11,9 +11,11 @@ interface InnerTab<T> extends Tab<T> {
 
 class TabContainer<T> {
   private tabList : Array<InnerTab<T>> = [];
+  private defaultTabInfo : {title: string, content: T};
   constructor(mainTab?: {title: string, content: T}) {
     if(mainTab) {
       const tab = this.createInnerTab(mainTab);
+      this.defaultTabInfo = mainTab;
       this.tabList.push(tab);
     }
   }
@@ -44,6 +46,7 @@ class TabContainer<T> {
   }
 
   addTab(tab: {title: string, content: T}) {
+    if(this.tabList.filter((v) => v.title == tab.title).length > 0) return;
     const newTab = this.createInnerTab(tab);
     this.tabList.push(newTab);
   }
@@ -57,16 +60,30 @@ class TabContainer<T> {
     }
 
     this.tabList = this.tabList.filter((tab) => tab !== removeTab);
+    this.tabList.forEach((tab, idx) => tab.idx = idx);
     return removeTab;
+  }
+
+  get(titleOrIdx : number | string) : Tab<T> | undefined {
+    let filtered : Array<Tab<T>>;
+    if(typeof titleOrIdx === 'number') {
+      filtered = this.tabList.filter((tab) => tab.idx == titleOrIdx);
+    } else if(typeof titleOrIdx === 'string') {
+      filtered = this.tabList.filter((tab) => tab.title == titleOrIdx);
+    } else throw new Error('');
+    return filtered.length > 0 ? filtered[0] : undefined;
   }
 
   getList() : Array<Tab<T>>{
     return [...this.tabList];
   }
 
-  
+  clear() {
+    this.tabList = [];
+    if(this.defaultTabInfo) this.addTab(this.defaultTabInfo);
+  }
 }
 
-export default <T> (mainTab?: {title: string, content: T}) => {
+export default function createTab<T> (mainTab?: {title: string, content: T}) {
   return new TabContainer(mainTab);
 };

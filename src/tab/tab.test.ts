@@ -1,30 +1,58 @@
-import createTab, {Tab} from './tab';
+import createTab from './tab';
 
-const tabs = createTab<string>();
+describe('Tab TEST', () => {
+  let tabs = createTab<string>();
 
-let tab1 = {
-  title: 'tabname1',
-  content: 'content1'
-}
+  let tab1 = { title: 'tabname1', content: 'content1'};
+  let tab2 = { title: 'tabname2', content: 'content2'};
+  let tab3 = { title: 'tabname3', content: 'content3'};
+  beforeEach(() => {
+    tabs = createTab<string>();
+    tabs.addTab(tab1);
+    tabs.addTab(tab2);
+    tabs.addTab(tab3);
+  });
 
-let tab2 = {
-  title: 'tabname2',
-  content: 'content2'
-}
-tabs.addTab(tab1);
-tabs.addTab(tab2);
+  it('addTab', () => {
+    tabs.addTab(tab2);
+    expect(tabs.getList().length).toBe(3);
 
-test.each(tabs.getList())('add tab', (tab: Tab<string>) => {
-  if(tab.title == tab1.title) expect(tab.content).toEqual(tab1.content);
-  if(tab.title == tab2.title) expect(tab.content).toEqual(tab2.content);
-});
+    let i = 0;
+    tabs.getList().forEach((tab) => expect(tab.idx).toEqual(i++));
+  });
 
-test('tab length',()=>{
-  expect(tabs.getList().length).toEqual(2);
-  tabs.getList()[0].delete();
-  expect(tabs.getList().length).toEqual(1);
-});
+  it('removeTab', () => {
+    const removedTab = tabs.removeTab(1);
+    expect(removedTab.title).toBe('tabname2');
+    expect(removedTab.content).toBe('content2');
+    expect(tabs.getList().length).toBe(2);
+    
+    let i = 0;
+    tabs.getList().forEach((tab) => expect(tab.idx).toEqual(i++));
+  });
 
-test('tab length',()=>{
-  expect(tabs.getList().length).toEqual(1);
+  it('delete', () => {
+    const removedTab = tabs.get(1).delete();
+    expect(removedTab.title).toBe('tabname2');
+    expect(removedTab.content).toBe('content2');
+    expect(tabs.getList().length).toBe(2);
+
+    let i = 0;
+    tabs.getList().forEach((tab) => expect(tab.idx).toEqual(i++));
+  });
+
+  it('clear', () => {
+    expect(tabs.getList().length).toBe(3);
+    tabs.clear();
+    expect(tabs.getList().length).toBe(0);
+    tabs = createTab<string>(tab2);
+    tabs.addTab(tab3);
+    expect(tabs.getList().length).toBe(2);
+    tabs.clear();
+    expect(tabs.getList().length).toBe(1);
+    const mainTab = tabs.getList()[0];
+    expect(mainTab.title).toBe('tabname2');
+    expect(mainTab.content).toBe('content2');
+  });
+
 });
